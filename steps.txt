@@ -23,3 +23,23 @@ kubectl apply -f ./manifests/minimal-postgres-manifest.yaml
 kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.25.0/controller.yaml
 
 kubectl apply -f zilando-CRDs/postgres-config/postgres-cluster.yaml 
+
+
+#make the application and connect it with the argoCD from the repo
+#first part is complete... 
+
+
+#second part for user management.
+
+
+kubectl create secret generic postgres.credentials \
+  -n postgres \
+  --from-literal=password='postgres'
+
+
+kubectl apply -f controller/rbac.yaml
+kubectl apply -f controller/deployment.yaml
+
+# now apply the empty user manifest
+kubectl apply -f users-config.yaml
+

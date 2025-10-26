@@ -1,19 +1,7 @@
 apiVersion: v1
+data:
+  users.yaml: ""
 kind: ConfigMap
 metadata:
-  name: users-config
-  namespace: argocd-zilando
-  labels:
-    argocd.argoproj.io/track: "true"
-data:
-  users.yaml: |
-    users:
-      - username: "app_user_4"
-        password: "securepass1"
-        database: "postgres"
-        roles: ["read", "write"]
-
-      - username: "admin_user"
-        password: "securepass2"
-        database: "postgres"
-        roles: ["superuser"]
+  name: postgres-users-config
+  namespace: postgres
