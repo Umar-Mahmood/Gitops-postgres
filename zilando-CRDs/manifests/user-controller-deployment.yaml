@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-user-controller
+  namespace: argocd-zilando
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-user-controller
+  template:
+    metadata:
+      labels:
+        app: pg-user-controller
+    spec:
+      containers:
+      - name: pg-user-controller
+        image: your-docker-repo/user-controller:latest
+        imagePullPolicy: Always
+        env:
+        - name: DB_HOST
+          value: "acid-minimal-cluster"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "postgres"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+      restartPolicy: Always

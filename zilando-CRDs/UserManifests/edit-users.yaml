@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  users.yaml: "timestamp: '2025-04-19T22:15:55.039845'\nusers:\n
+    - database: postgres\n\ \  password: pass0\n  roles:\n  - read\n  username: user_9\n
+    - database: postgres\n\ \  password: pass4\n  roles:\n  - read\n  username: user_4\n
+    - database: postgres\n\ \  password: pass1\n  roles:\n  - read\n  username: user_1\n
+    - database: postgres\n\ \  password: pass2\n  roles:\n  - read\n  username: user_2\n
+    - database: postgres\n\ \  password: pass3\n  roles:\n  - read\n  username: user_3\n"
+kind: ConfigMap
+metadata:
+  name: postgres-users-config
+  namespace: postgres

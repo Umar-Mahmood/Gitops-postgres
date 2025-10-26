@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-controller
+  namespace: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-controller
+  template:
+    metadata:
+      labels:
+        app: user-controller
+    spec:
+      serviceAccountName: user-controller-sa
+      containers:
+        - name: controller
+          image: 43911/user-controller:latest  # ← use your tag if needed
+          env:
+            - name: DB_HOST
+              value: "acid-minimal-cluster"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "postgres"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: postgres.credentials
+                  key: password

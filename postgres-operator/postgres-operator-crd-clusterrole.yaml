@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: postgres-operator-crd-clusterrole
+rules:
+  - apiGroups: ["acid.zalan.do"]
+    resources: ["postgresqls"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
