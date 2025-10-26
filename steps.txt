@@ -22,3 +22,4 @@ kubectl apply -f ./manifests/minimal-postgres-manifest.yaml
 #bitnami secrets
 kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.25.0/controller.yaml
 
+kubectl apply -f zilando-CRDs/postgres-config/postgres-cluster.yaml 
