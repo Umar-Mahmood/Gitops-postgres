@@ -17,9 +17,10 @@ spec:
       containers:
         - name: controller
           image: 43911/user-controller:latest  # ← use your tag if needed
+          imagePullPolicy: Always
           env:
             - name: DB_HOST
-              value: "acid-minimal-cluster"
+              value: "acid-minimal-cluster.default.svc.cluster.local"
             - name: DB_PORT
               value: "5432"
             - name: DB_NAME
@@ -29,5 +30,5 @@ spec:
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
-                  name: postgres.credentials
+                  name: postgres.acid-minimal-cluster.credentials.postgresql.acid.zalan.do
                   key: password

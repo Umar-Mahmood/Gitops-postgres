@@ -21,7 +21,7 @@ def get_user_password(username):
 NAMESPACE = "postgres"
 CONFIGMAP_NAME = "postgres-users-config"
 
-DB_HOST = os.getenv("DB_HOST", "acid-minimal-cluster")
+DB_HOST = os.getenv("DB_HOST", "acid-minimal-cluster.default.svc.cluster.local")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 DB_USER = os.getenv("DB_USER", "postgres")

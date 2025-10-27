@@ -22,6 +22,9 @@ kubectl apply -f ./manifests/minimal-postgres-manifest.yaml
 #bitnami secrets
 kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.25.0/controller.yaml
 
+kubeseal --fetch-cert > pub-cert.pem
+
+
 kubectl apply -f zilando-CRDs/postgres-config/postgres-cluster.yaml 
 
 
@@ -36,6 +39,11 @@ kubectl create secret generic postgres.credentials \
   -n postgres \
   --from-literal=password='postgres'
 
+kubectl get secret postgres.acid-minimal-cluster.credentials.postgresql.acid.zalan.do -n default -o yaml \
+  | sed 's/namespace: default/namespace: postgres/' \
+  | kubectl apply -f -
+
+
 
 kubectl apply -f controller/rbac.yaml
 kubectl apply -f controller/deployment.yaml
@@ -43,3 +51,13 @@ kubectl apply -f controller/deployment.yaml
 # now apply the empty user manifest
 kubectl apply -f users-config.yaml
 
+#and create the second argoCD app... to sync the users... and sync the users there...
+
+kubectl logs -f deployment/user-controller -n postgres
+
+
+#get the secrets
+kubectl get secret postgres.acid-minimal-cluster.credentials.postgresql.acid.zalan.do -o yaml
+
+#and then decode it...
+echo QzZ4a1oxWE9HYnVmOW4xdGdEa2NCdmJwZFdJamM1a2k0UjZXMWR0R3poSFdaQVJqWTdXZ2xQVXpKQWcyNmNFQQ== | base64 -d
