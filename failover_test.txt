@@ -1,0 +1,28 @@
+ kubectl get pods -l application=spilo
+
+ kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+
+#create data
+kubectl exec -i acid-minimal-cluster-0 -- bash -lc "psql -U postgres <<'SQL'
+CREATE DATABASE failover_test;
+\\c failover_test
+CREATE TABLE customers (id SERIAL PRIMARY KEY, name TEXT);
+INSERT INTO customers (name) VALUES ('Alice'), ('Bob'), ('Charlie');
+SQL"
+
+
+#check data in the instance
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+
+
+#delete the primary
+kubectl delete pod acid-minimal-cluster-0
+
+#check the data in the primary
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+
+
+kubectl exec -i acid-minimal-cluster-1 -- psql -U postgres -d failover_test -c "INSERT INTO customers (name) VALUES ('Diana'), ('Eve'), ('Frank');"

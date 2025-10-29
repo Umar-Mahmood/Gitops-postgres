@@ -92,32 +92,32 @@ def sync_users():
                         print(f"🗑️ Deleting user: {username}")
                         try:
                             drop_user(cur, username)
-                            log(f"🗑️ Deleted user: {username}")
+                            log(f"Deleted user: {username}")
                         except Exception as e:
-                            log(f"❌ Error deleting user {username}: {e}")
+                            log(f"Error deleting user {username}: {e}")
 
                 # Handle additions and updates
                 for username, user in desired_users.items():
                     if username not in current_users:
                         create_user(cur, user)
-                        log(f"✅ Created user: {username}")
+                        log(f" Created user: {username}")
                     else:
                         prev = last_seen_users.get(username, {})
                         if prev.get("roles") != user.get("roles"):
                             update_roles(cur, username, prev.get("roles", []), user.get("roles", []))
-                            log(f"🔄 Updated roles for: {username}")
+                            log(f"Updated roles for: {username}")
 
             conn.commit()
 
         last_seen_users = desired_users
-        log("� Sync complete.")
+        log("Sync complete.")
 
     except Exception as e:
-        log(f"❌ Sync error: {e}")
+        log(f"Sync error: {e}")
 
 if __name__ == "__main__":
-    log(f"🟢 Controller started...")
+    log(f"Controller started...")
     while True:
-        log("🔁 Syncing users...")
+        log("Syncing users...")
         sync_users()
         time.sleep(30)
