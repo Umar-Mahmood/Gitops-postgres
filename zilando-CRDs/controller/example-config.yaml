@@ -1,0 +1,81 @@
+---
+# Example ConfigMap with user specifications
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-users-config
+  namespace: postgres
+data:
+  users.yaml: |
+    users:
+      # Data Analyst - Read-only access
+      - username: alice
+        database: analytics
+        roles:
+          - read_only
+          - analyst_role
+      
+      # Developer - Read-write access
+      - username: bob
+        database: myapp
+        roles:
+          - read_write
+          - developer_role
+      
+      # Admin user - Full access
+      - username: charlie
+        database: myapp
+        roles:
+          - admin_role
+          - developer_role
+      
+      # Service account - Limited access
+      - username: service_account
+        database: myapp
+        roles:
+          - read_only
+          - service_role
+
+---
+# Example Secret for user alice
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-alice-secret
+  namespace: postgres
+type: Opaque
+stringData:
+  password: "alice_secure_password_123"
+
+---
+# Example Secret for user bob
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-bob-secret
+  namespace: postgres
+type: Opaque
+stringData:
+  password: "bob_secure_password_456"
+
+---
+# Example Secret for user charlie
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-charlie-secret
+  namespace: postgres
+type: Opaque
+stringData:
+  password: "charlie_secure_password_789"
+
+---
+# Example Secret for service account
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-service-account-secret
+  namespace: postgres
+type: Opaque
+stringData:
+  password: "service_account_password_000"
