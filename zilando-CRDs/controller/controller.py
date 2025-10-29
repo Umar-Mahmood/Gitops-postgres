@@ -849,10 +849,8 @@ class PostgresUserController:
             desired_users, actual_users
         )
         
-        drift_count = len(users_to_create) + len(users_to_delete)
-        if drift_count > 0:
-            logger.info(f"{YELLOW}Drift detected: {drift_count} changes needed{RESET}")
-            stats.drift_detected = drift_count
+        # We'll calculate actual drift after checking database state
+        actual_drift_count = 0
         
         # Handle deletions
         for username in users_to_delete:
@@ -861,6 +859,7 @@ class PostgresUserController:
                 try:
                     self.db_client.drop_user(username, dry_run=dry_run)
                     stats.users_deleted += 1
+                    actual_drift_count += 1
                 except Exception as e:
                     logger.error(f"Failed to delete user {username}: {e}")
                     stats.errors += 1
@@ -880,6 +879,7 @@ class PostgresUserController:
                 
                 self.db_client.create_user(user_spec, password, dry_run=dry_run)
                 stats.users_created += 1
+                actual_drift_count += 1
             except Exception as e:
                 logger.error(f"Failed to create user {username}: {e}")
                 stats.errors += 1
@@ -903,9 +903,18 @@ class PostgresUserController:
                             dry_run=dry_run
                         )
                         stats.users_updated += 1
+                        actual_drift_count += 1
                 except Exception as e:
                     logger.error(f"Failed to update user {username}: {e}")
                     stats.errors += 1
+        
+        # Log drift only if actual changes were needed
+        if actual_drift_count > 0:
+            logger.info(f"{YELLOW}Drift detected: {actual_drift_count} changes needed{RESET}")
+        else:
+            logger.info(f"{GREEN}No drift detected - system in desired state{RESET}")
+        
+        stats.drift_detected = actual_drift_count
         
         # Save new state
         if not dry_run:
