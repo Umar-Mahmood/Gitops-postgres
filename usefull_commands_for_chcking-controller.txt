@@ -1,0 +1,19 @@
+#using bash in pod 
+kubectl exec -it acid-minimal-cluster-0 -- bash
+
+##login to psql
+psql -U postgres -d postgres
+
+
+#checing permissions in psql
+SELECT roleid::regrole AS role, member::regrole AS member
+FROM pg_auth_members;
+
+
+#check logs of controller
+kubectl logs -f deployment/user-controller -n postgres
+
+
+#port farward argoCd
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
