@@ -17,3 +17,11 @@ kubectl logs -f deployment/user-controller -n postgres
 #port farward argoCd
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
+#build the controller image
+docker build -t 43911/user-controller:latest .
+
+#push the image to docker hub
+docker push 43911/user-controller:latest
+
+#restart the controller
+kubectl rollout restart deployment user-controller -n postgres

@@ -33,6 +33,14 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 import hashlib
 
+# ANSI color codes
+BLUE = "\033[94m"
+RED = "\033[91m"
+WHITE = "\033[97m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
+
 # Configure structured logging
 logging.basicConfig(
     level=logging.INFO,
@@ -409,7 +417,7 @@ class DatabaseClient:
                 cur.execute(sql.SQL("CREATE ROLE {} NOLOGIN;").format(
                     sql.Identifier(role_name)
                 ))
-                logger.info(f"✅ Created role: {role_name}")
+                logger.info(f"{WHITE}Created role: {role_name}{RESET}")
         except psycopg2.Error as e:
             logger.error(f"Error creating role {role_name}: {e}")
             raise
@@ -438,7 +446,7 @@ class DatabaseClient:
                 cur.execute(sql.SQL("DROP ROLE IF EXISTS {};").format(
                     sql.Identifier(role_name)
                 ))
-                logger.info(f"🗑️ Dropped role: {role_name}")
+                logger.info(f"{WHITE}Dropped role: {role_name}{RESET}")
         except psycopg2.Error as e:
             logger.error(f"Error dropping role {role_name}: {e}")
             raise
@@ -470,7 +478,7 @@ class DatabaseClient:
                     ),
                     (password,)
                 )
-                logger.info(f"✅ Created user: {user_spec.username}")
+                logger.info(f"{WHITE}Created user: {user_spec.username}{RESET}")
                 
                 # Grant database access
                 cur.execute(
@@ -550,7 +558,7 @@ class DatabaseClient:
                     logger.info(f"  ↳ Granted role {role} to {username}")
                 
                 conn.commit()
-                logger.info(f"🔄 Updated roles for user: {username}")
+                logger.info(f"{WHITE}Updated roles for user: {username}{RESET}")
         except psycopg2.Error as e:
             logger.error(f"Error updating roles for user {username}: {e}")
             if conn:
@@ -607,7 +615,7 @@ class DatabaseClient:
                 )
                 
                 conn.commit()
-                logger.info(f"🗑️ Dropped user: {username}")
+                logger.info(f"{WHITE}Dropped user: {username}{RESET}")
         except psycopg2.Error as e:
             logger.error(f"Error dropping user {username}: {e}")
             if conn:
@@ -843,7 +851,7 @@ class PostgresUserController:
         
         drift_count = len(users_to_create) + len(users_to_delete)
         if drift_count > 0:
-            logger.info(f"🔍 Drift detected: {drift_count} changes needed")
+            logger.info(f"{YELLOW}Drift detected: {drift_count} changes needed{RESET}")
             stats.drift_detected = drift_count
         
         # Handle deletions
@@ -911,7 +919,7 @@ class PostgresUserController:
         """
         Main control loop that runs continuously
         """
-        logger.info(f"🚀 Controller started (DRY_RUN={Config.DRY_RUN})")
+        logger.info(f"{GREEN}Controller started (DRY_RUN={Config.DRY_RUN}){RESET}")
         logger.info(f"Sync interval: {Config.SYNC_INTERVAL}s")
         
         while True:
@@ -928,7 +936,7 @@ class PostgresUserController:
                 
                 # Print summary
                 logger.info("=" * 60)
-                logger.info("📊 Reconciliation Summary:")
+                logger.info(f"{WHITE}Reconciliation Summary:{RESET}")
                 logger.info(f"  • Users created: {stats.users_created}")
                 logger.info(f"  • Users updated: {stats.users_updated}")
                 logger.info(f"  • Users deleted: {stats.users_deleted}")
@@ -946,7 +954,7 @@ class PostgresUserController:
                 self.metrics.record_reconciliation(stats)
             
             # Sleep until next cycle
-            logger.info(f"💤 Sleeping for {Config.SYNC_INTERVAL}s...")
+            logger.info(f"{BLUE}Sleeping for {Config.SYNC_INTERVAL}s...{RESET}")
             time.sleep(Config.SYNC_INTERVAL)
     
     def cleanup(self):
