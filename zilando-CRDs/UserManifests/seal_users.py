@@ -5,6 +5,12 @@ import os
 import base64
 from datetime import datetime
 
+# ANSI color codes
+BLUE = "\033[94m"
+RED = "\033[91m"
+WHITE = "\033[97m"
+RESET = "\033[0m"
+
 EDIT_FILE = "edit-users.yaml"
 OUTPUT_CONFIGMAP = "users.yaml"
 CERT_FILE = "pub-cert.pem"
@@ -50,7 +56,7 @@ def seal(secret_yaml):
     os.remove(tmp_path)
 
     if result.returncode != 0:
-        print("❌ Sealing failed:", result.stderr.decode())
+        print(f"{RED}Sealing failed: {result.stderr.decode()}{RESET}")
         exit(1)
 
     return yaml.safe_load(result.stdout.decode())
@@ -62,7 +68,7 @@ def main():
     # Write sealed secrets
     with open(OUTPUT_SEALED, "w") as f:
         yaml.dump_all(sealed_secrets, f)
-    print(f"✅ Sealed secrets written to: {OUTPUT_SEALED}")
+    print(f"{WHITE}Sealed secrets written to: {OUTPUT_SEALED}{RESET}")
 
     # Create cleaned configmap
     cleaned_users = []
@@ -88,7 +94,7 @@ def main():
     with open(OUTPUT_CONFIGMAP, "w") as f:
         yaml.dump(users_configmap, f)
 
-    print(f"🧹 Passwords removed from output: {OUTPUT_CONFIGMAP}")
+    print(f"{WHITE}Passwords removed from output: {OUTPUT_CONFIGMAP}{RESET}")
 
 if __name__ == "__main__":
     main()
