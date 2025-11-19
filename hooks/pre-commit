@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Pre-commit hook to seal user secrets
+# This hook runs seal_users.py when edit-users.yaml is modified
+
+# ANSI color codes
+BLUE="\033[94m"
+RED="\033[91m"
+WHITE="\033[97m"
+RESET="\033[0m"
+
+EDIT_FILE="zilando-CRDs/UserManifests/edit-users.yaml"
+SEAL_SCRIPT="zilando-CRDs/UserManifests/seal_users.py"
+USERS_YAML="zilando-CRDs/UserManifests/users.yaml"
+SEALED_YAML_IN_MANIFEST="zilando-CRDs/UserManifests/sealed-users.yaml"
+SEALED_YAML_ROOT="zilando-CRDs/sealed-users.yaml"
+CERT_FILE="zilando-CRDs/pub-cert.pem"
+
+# Check if edit-users.yaml is staged
+if git diff --cached --name-only | grep -q "^${EDIT_FILE}$"; then
+    echo -e "${BLUE}Detected changes to ${EDIT_FILE}${RESET}"
+    
+    # Check if required files exist
+    if [ ! -f "${SEAL_SCRIPT}" ]; then
+        echo -e "${RED}Error: ${SEAL_SCRIPT} not found!${RESET}"
+        exit 1
+    fi
+    
+    if [ ! -f "${CERT_FILE}" ]; then
+        echo -e "${RED}Error: ${CERT_FILE} not found! Cannot seal secrets.${RESET}"
+        exit 1
+    fi
+    
+    # Change to the UserManifests directory to run the script
+    cd zilando-CRDs/UserManifests || exit 1
+    
+    echo -e "${BLUE}Running seal_users.py to generate sealed secrets...${RESET}"
+    
+    # Run the seal script
+    if python3 seal_users.py; then
+        cd - > /dev/null || exit 1
+        
+        # Stage the generated files
+        echo -e "${BLUE}Staging generated files...${RESET}"
+        git add "${USERS_YAML}"
+        
+        # Check which sealed-users.yaml was created and stage it
+        if [ -f "${SEALED_YAML_IN_MANIFEST}" ]; then
+            git add "${SEALED_YAML_IN_MANIFEST}"
+        fi
+        if [ -f "${SEALED_YAML_ROOT}" ]; then
+            git add "${SEALED_YAML_ROOT}"
+        fi
+        
+        # Unstage edit-users.yaml
+        echo -e "${BLUE}Unstaging ${EDIT_FILE}...${RESET}"
+        git reset HEAD "${EDIT_FILE}"
+        
+        echo -e "${WHITE}Pre-commit hook completed successfully!${RESET}"
+        echo -e "${WHITE}Note: ${EDIT_FILE} has been unstaged but your local changes are preserved.${RESET}"
+        echo -e "${WHITE}Committing: ${USERS_YAML} and ${SEALED_YAML}${RESET}"
+    else
+        cd - > /dev/null || exit 1
+        echo -e "${RED}Failed to seal secrets. Commit aborted.${RESET}"
+        exit 1
+    fi
+fi
+
+exit 0
