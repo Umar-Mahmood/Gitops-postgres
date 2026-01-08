@@ -1,8 +1,10 @@
 apiVersion: v1
 data:
-  users.yaml: "timestamp: '2025-11-19T02:18:22.103211'\nusers:\n- database: postgres\n\
+  users.yaml: "timestamp: '2026-01-08T02:27:39.131742'\nusers:\n- database: postgres\n\
     \  roles:\n  - test_role\n  username: demo_user\n- database: postgres\n  roles:\n\
-    \  - test_role1\n  username: demo_user1\n"
+    \  - writer\n  username: demo_user_2\n- database: postgres\n  roles:\n  - reader\n\
+    \  username: demo_user_3\n- database: postgres\n  roles:\n  - writer\n  username:\
+    \ demo_user_4\n"
 kind: ConfigMap
 metadata:
   name: postgres-users-config

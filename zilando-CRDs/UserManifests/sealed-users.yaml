@@ -1,13 +1,15 @@
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
+  creationTimestamp: null
   name: user-demo-user-secret
   namespace: postgres
 spec:
   encryptedData:
-    password: AgCNRV9fLZ3FvF+/Ftz6SDs7wbQXxUHJgkDhk633ayBHgME957Nzq0dA1hrzRUnwLAGij67cXSIKTLxqaicwbiyE1X98dowZwRV+gfnPTjZOhBnSja9M4XDDBNN/0oePmd264QavtO+n6GP1AFrX1tbBctd3YifcrQ7M8YGgWgJ/xqGMyQWcmPMvzTZxqqwQQ4y5e7gdIf38E9R9WsdB/m0TY47qjKHxLECK6NMN0aNyth4HrPIdNYIH4tZH0/RPXUpsV4XeH/rKXK2ksKyb8B0X3GtcdvIUZqWNq2Z68PxsXRmXgzp46qQ5jGEPThmpxUZxMShMyLKwC1L/VbGXygkzSUIkqQdH2sT5eANMADStqVeOzxC/1kNowtRU7XMsZxo/zgkeuH4AzMyFzDfrvwSE6OykEukAmOrZ0UX73o0g2hIWY6iZabdzJMG0jqG39Ofw1dMJLcui52yE4BAyPlKM6GwH6Vpt05QuDqwrMg6MCf9sibp1VtcBb8Gnl4BKGJBLABCJr110fDCp9nfdKdDFnwdHKy4cjNKXPWNbQ2FGhnUBiIFEDCL0SG2lThKYxhO2qUpN+ixKlwJa+I/f1902CMvuRW02ugK3Zx9085KlRt9nYWdrgcuyLj1Nho9Vr27s/3LhF9M3XIeqa9Sddeb7OjNSIkUAS1BNFKF+ysn8B1FTkrc6NLES3DuG/5X3u8OB6s2Ztw==
+    password: AgAbOT+Bh64o4xymYJ205sYtBYrJ4ooZuQQTDmkN332hs5ZGTmYxUcFqa3WngPVovW4KC71YHMQtoJulnoAALhGPTJgWk+xN6y/g3z2Nu5sNN9MRwsu0dPtpDeS1nZM0LNhMslgYRfz/mKqWTw3UQIQZZiT6beDInRGagNfq0oOnkegG/Ux0ZerfpF4THR5DcjlfikeKRtXT2e1FY8fvEoKuADstYDU8vCH9equNaXdN7YfMRdfwRDT15YnCPp2cIVDX0DlPnveR4+zeZLUkT/+ijdlN97Hl2XIqVstWI0z5hcBmsNYDU8ycYbOk6syo6YfvNSnukVpNua4YsMbxuHyRc1/vBxsYsib2WHBVjRxNCLLN2JvvqzWONd5WKrF+nFSILZLR5BJwJGHUPy9pHVXKtxPQ1QSf99ZoVTRJFGp38JkRoJa3MTPkx8BywBIOOao8dVDXtmcGj8IoUzpLhrBcLStv2gK9BS3nXY27w8JXmsQvhnB8G/q/oubUl6y+0I8HJX7zE6hTpaub1cKHtk9tkA0NjORL5odi9v72GoBFiiVZP+qTU1MIoPz4LX9SVyHVjP5P+cRQo8NOBFS129er0S2A1jKCrT0PLk4td2t0FKC0DA38SqyQD2J7dFiPVaVTm7zxADaN9OaQGgupcOKZdv2WJ0x3Xi/dcWWc1X4FCOojIc+h9arH5lBM8tA09+qcxHICxg==
   template:
     metadata:
+      creationTimestamp: null
       name: user-demo-user-secret
       namespace: postgres
     type: Opaque
@@ -15,13 +17,47 @@ spec:
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
-  name: user-demo-user1-secret
+  creationTimestamp: null
+  name: user-demo-user-2-secret
   namespace: postgres
 spec:
   encryptedData:
-    password: AgB0qg863thNjQtL4LlSkqIB/VI3mHPSTgYql8Nc8n1KmoCmLhlDWL7V0UpKHvwtx5IJc9/URtFwkWtRAs6FN8M3D239enmdGMqlXwIMSvLaKTKnJtPBJOCWKYz8O3wPJNtoE05LKP4krn1okCFn8TGOJwP/KHi2YkP8iHxxegMxx5xK+CNonZcg1pKZDIVThHlXASjFCpMmPx4ZoVZTCVpzx20JRSP08sRGryjHsE12z4eXYSBgHdcN+wr8Evy/n3iLs1NrW1njbBD9wSqkzcxY5rER0InPdOlFm9EH8m7qi2ip83wSuAwqawvHMRVyIwXxJaFmwXC9NPmDCNypBvvq2aXXXDFsWGvUhTJWGJ/ep99RJMa3NBGK17dRQf98VD+cZK6h+mgFTY3tFuCnz94F19XWRb+oQmdt+44BmD2NMavhNWkIZRYGu96LGyc9OUH69viJjj+VgNRMFn1JmfSR76cdTWOfh/O1Wphtj7q4e9yM4vRbq0oiQ7vDpmu/rkfZtGt3pwAke+9PCmSTnxWfpqnkI888d5Bp/wf4aU+8AEFiCIWZIWs6KFgZ7JACvuZVdnOg+cXB2i/yRR4ozYHJH623N0pc6sWlUh8AVnvzQST/COtZM8e3BvHDI3EYj8HmEiX4XRYyvq/wFbal5651ERzQKwQEJwhiEBsWD1QpNwyHUIWizCH/Xm044dtLH6XyUrP9Kg==
+    password: AgCcRulVIOcAPglIUfyVvFDvv0LFa5O5EFbkW4cF4pRxHyX77tLka96UmyFCa1qdkB7hODwh3SperagF1wo5wKWZHX1YOXV7vVEjCDhCGMIaZ0QuKoyMMtoSATwfAjfz5Z77h+fPSL8QRAxTw4aq8Hm58B0YVX1Km/FH0CXo6DvnxhpOAvkYKnbGb7hIzK70zaepwLr5OHsfmucpUviRioGZ7y2g2DmaLO8l+0VeQGLI6Wfuc+GCcuUo0xPtMP3kGSkDGcZ8sUPuotTygl5V/XnbZLrhgKsBzvKCgXdIfXW5BrrwF+Ky92pwdvFq4RixCokF5Sowdnv4Sx9bt91yBXABTdmHnWM1FkpHeHeW+fhofjxZAcC4iePmpSiiKbSxPOkMmtfX2Rq42CEgA8+cg9ptDNm7vzZyOrSmxsgs0JRAEvr3VzVETUsPyP6I7U8rVSwqE8wYWS44XIkZ2QlV1eFmjdLoP0mOQ5ff5zV2q8TtAlPzifPYFrdeDJh1lEKJm/MCAekChFoboSCBEysiFNl6spAuK5eScNRja9eyyTK8SGiTsQeRrRL9CWUWd+pmLMZ702FqJRnf+r97p1J7k08xRrwPGN+Oj/fBUCqxPPUPg2unPXmF4aNmhl1TI+vmfCWZPmHSth2RP6BxLPNITNevCFJzqct5ACsfsJdGM3lsj5x8xNjstpMA6NlsxdyV2ZoUkKCosQ==
   template:
     metadata:
-      name: user-demo-user1-secret
+      creationTimestamp: null
+      name: user-demo-user-2-secret
+      namespace: postgres
+    type: Opaque
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: user-demo-user-3-secret
+  namespace: postgres
+spec:
+  encryptedData:
+    password: AgAf+P4ewLdlpLBqYm0iiXu1fnZp4kE455NyR9b84C70AcJjSG+vcitFL6sPZEWTUwpdNS9AwoZv4Xv/W1/8Wn9SA9Dph99dy+mANSDThkQ06vDwYrghKL5foTTDoEAiPXYBQT22XeO8L4ppBi9cot2xcbVBxyQYt7HH9YykK9fQgamnkaWImfe7wjYMnhl8oZ6Nx8hXBOTA+zWBZ8LO+P8fON0KgmqhczR1NRERTK5D4pCrsoEC3zOhCb8Pm/d4KkDpiBD+AycBJXiaahx7oZ3Hk7bIvFl95iu9b7PkgN8hMfXbSqFejRyNtAdiLedVDtmKN0SZmnoLzan4kujPkLIETOwr8vL3BNcO4qgLWPrQCA34Mgxs/6HA7W44GjOiFKFb6382JlJUFBbItKIeVyPnhK5QA+TT1PAukX5gvHCUO8RbfrKg3gVSuQJS8Eck8iZvlSCAYHZjVGcFOpOpwpUpYbixvaT5vIT6KGi4FVsULEd+McA/Z6h8K7x81l9C0a3Mx3HpuCtVgi70H8mLcqeF5EhCtTBd4CXgLbiU1glMwstjCK8dR2AXan708cZaiFZs5wXJHGwc1qNZXRdZ7RtUt5UaQy3/eTW4CtjVJe5THSDFpdxWHlxh28Enazcj8BiqDNfogp6ERjfjYSlVtOTbDPBnEvY2SVMkr+T87KE1jSi5NZriouFYkPLx0u1DxY4Cmzaydw==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: user-demo-user-3-secret
+      namespace: postgres
+    type: Opaque
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: user-demo-user-4-secret
+  namespace: postgres
+spec:
+  encryptedData:
+    password: AgBavs/wqRrfcj5AsuTLA6tbCzFqeg8X1yCDaTqHuhG6SJobs9P7k7uL7FN7Ly0QvXb3n4QBLtJGbLN5Wn3OLaEX5qaR962495zxiB2UpT3Wjvun5F6p4m9dBGxgSIeN4fMR0+YH7U4vV2h9g91GGIOELIdlu1er71NtXWbDHWn87Rcrwz+NtHp2QG0yZ2ARlx+iLaAzJbCPyQ8V+lQwS3xkUajlxoc7EwYQjXxBjsTT7k55AqUI1My1SlhKlKNAXNhmx4WzZk3XRi82W5cksQkwYtQO0YDO+eJm4nyIn1Jm7kVBM4nuqwzYjR4dZYM9OQRGlCX0mTMvXRKb5Seamwkno9wQ1i7X4LbP0XWWlyaLjDjtRNBI6A2vVNseMxIqFH9dEh4nB5PB+6ct5mW3Xdo9RX7K7gjPijVV1KmVOHgmd5F5cN5m6ze1pjsIQ4sgH8gu9Fh9LzJIjwk9ueseF7Sm3ztxf4P4WH1wnx1FLw65QItKRGyojQreeaLCnnIXtsK94oU/FoQ2OatDR/AzD4M9Yf8qj/c3nIB44AGYuLL+zbZV1f3Km4I+orGoC7lMOe5E5ICnlI64pJL/mw8HkHpPxPJwtSjftDkr4n41/q1ortTjJa7zVzJqcoTbNHrGnhTTgYHYao2hrPsFY/qtQ8TNgdMf3XzLdLghqPWBa77uks9H/fsI4rMbZMlPsX7AdB5jmpR9Sw==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: user-demo-user-4-secret
       namespace: postgres
     type: Opaque
