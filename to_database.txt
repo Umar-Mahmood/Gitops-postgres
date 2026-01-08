@@ -1,0 +1,13 @@
+kubectl port-forward pod/acid-minimal-cluster-0 5432:5432
+
+
+psql -h <SERVER_PUBLIC_IP> -p 5432 -U postgres -d postgres
+
+
+expose with LoadBalancer
+
+
+kubectl edit svc acid-minimal-cluster
+
+
+psql -h <EXTERNAL-IP> -p 5432 -U postgres -d postgres
