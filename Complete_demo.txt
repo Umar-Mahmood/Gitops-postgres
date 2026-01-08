@@ -1,0 +1,797 @@
+================================================================================
+                    COMPLETE POSTGRES OPERATOR DEMO
+================================================================================
+
+CLUSTER CONNECTION COMMAND:
+ssh root@27.100.250.27 -p 6787
+
+================================================================================
+PART 1: INITIAL SETUP & ARCHITECTURE OVERVIEW
+================================================================================
+
+1.1 VERIFY CLUSTER CONNECTION
+------------------------------
+Location: Local Machine
+
+# Connect to the cluster
+ssh root@27.100.250.27 -p 6787
+
+# Verify kubectl is working
+kubectl get nodes
+
+# Check cluster info
+kubectl cluster-info
+
+
+1.2 SHOW ARGOCD APPLICATIONS
+-----------------------------
+Location: Cluster
+
+# List all ArgoCD applications
+kubectl get applications -n argocd
+
+# Get detailed info about postgres operator app
+kubectl get application postgres-operator -n argocd -o yaml
+
+# Get detailed info about postgres cluster app
+kubectl get application postgres-cluster -n argocd -o yaml
+
+# Get detailed info about user controller app
+kubectl get application user-controller -n argocd -o yaml
+
+# Check ArgoCD application status
+kubectl get applications -n argocd -o wide
+
+# (Optional) Access ArgoCD UI
+# On local machine, open new terminal:
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Get ArgoCD admin password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+# Open browser: https://localhost:8080
+# Username: admin, Password: <from above command>
+
+
+1.3 VERIFY POSTGRES OPERATOR DEPLOYMENT
+----------------------------------------
+Location: Cluster
+
+# Check postgres namespace
+kubectl get namespaces | grep postgres
+
+# Check postgres operator pod
+kubectl get pods -n postgres-operator
+
+# Check operator logs
+kubectl logs -n postgres-operator deployment/postgres-operator --tail=50
+
+# Check operator service
+kubectl get svc -n postgres-operator
+
+# Check operator CRDs
+kubectl get crds | grep acid
+
+
+1.4 VERIFY USER CONTROLLER DEPLOYMENT
+--------------------------------------
+Location: Cluster
+
+# Check user controller in postgres namespace
+kubectl get pods -n postgres | grep user-controller
+
+# Check user controller deployment
+kubectl get deployment -n postgres user-controller
+
+# Check user controller logs
+kubectl logs -f deployment/user-controller -n postgres --tail=30
+
+# Check user controller RBAC
+kubectl get serviceaccount -n postgres user-controller
+kubectl get clusterrole user-controller-role
+kubectl get clusterrolebinding user-controller-binding
+
+
+1.5 SHOW DIRECTORY STRUCTURE
+-----------------------------
+Location: Local Machine (in your project directory)
+
+# Show main directories
+ls -la /home/ncl-admin/Desktop/conf-paper/
+
+# Show postgres operator directory
+ls -la /home/ncl-admin/Desktop/conf-paper/postgres-operator/
+
+# Show Zalando CRDs directory
+ls -la /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/
+
+# Show controller directory
+ls -la /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/controller/
+
+# Show manifests directory
+ls -la /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/manifests/
+
+# Show user manifests directory
+ls -la /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/
+
+# Show postgres config directory
+ls -la /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/
+
+
+================================================================================
+PART 2: POSTGRES CLUSTER MANAGEMENT
+================================================================================
+
+2.1 CHECK CURRENT POSTGRES CLUSTER
+-----------------------------------
+Location: Cluster
+
+# List all postgresql custom resources
+kubectl get postgresql
+
+# Get detailed info about the cluster
+kubectl get postgresql acid-minimal-cluster -o yaml
+
+# Check postgres cluster pods
+kubectl get pods -l application=spilo
+
+# Check pod details
+kubectl get pods -l application=spilo -o wide
+
+# Check services
+kubectl get svc | grep acid-minimal-cluster
+
+# Check PVCs
+kubectl get pvc | grep acid-minimal-cluster
+
+
+2.2 VIEW CURRENT CLUSTER CONFIGURATION
+---------------------------------------
+Location: Local Machine
+
+# Show current postgres-cluster.yaml
+cat /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Or use your preferred editor
+code /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+
+2.3 CHECK PATRONI CLUSTER STATUS
+---------------------------------
+Location: Cluster
+
+# Check Patroni cluster status
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Show cluster topology
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list --extended
+
+
+2.4 DEMONSTRATE CLUSTER SCALING
+--------------------------------
+Location: Local Machine
+
+# Current configuration shows 3 instances
+# Edit postgres-cluster.yaml to change numberOfInstances
+
+# Example: Scale to 4 instances
+# Edit the file:
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Change:
+#   numberOfInstances: 3
+# To:
+#   numberOfInstances: 4
+
+# Commit and push changes
+cd /home/ncl-admin/Desktop/conf-paper
+git add zilando-CRDs/postgres-config/postgres-cluster.yaml
+git commit -m "Scale cluster to 4 instances"
+git push
+
+Location: Cluster
+
+# Watch ArgoCD sync the changes
+kubectl get applications -n argocd -w
+
+# Watch pods being created
+kubectl get pods -l application=spilo -w
+
+# Verify new pod is running
+kubectl get pods -l application=spilo
+
+# Check Patroni status
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+
+2.5 DEMONSTRATE POSTGRESQL VERSION CHANGE
+------------------------------------------
+Location: Local Machine
+
+# Show current version
+grep "version:" /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Edit to change version (example only - be careful with versions)
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Change:
+#   postgresql:
+#     version: "17"
+# To:
+#   postgresql:
+#     version: "16"
+
+# Commit and push (for demonstration, then revert)
+git add zilando-CRDs/postgres-config/postgres-cluster.yaml
+git commit -m "Demo: Change PostgreSQL version"
+git push
+
+Location: Cluster
+
+# Watch the update
+kubectl get pods -l application=spilo -w
+
+# Check operator logs
+kubectl logs -n postgres-operator deployment/postgres-operator --tail=50 -f
+
+
+2.6 DEMONSTRATE RESOURCE CHANGES
+---------------------------------
+Location: Local Machine
+
+# Add resource limits to postgres-cluster.yaml
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Add under spec:
+#   resources:
+#     requests:
+#       cpu: 500m
+#       memory: 500Mi
+#     limits:
+#       cpu: 1000m
+#       memory: 1Gi
+
+# Commit and push
+git add zilando-CRDs/postgres-config/postgres-cluster.yaml
+git commit -m "Add resource limits to cluster"
+git push
+
+Location: Cluster
+
+# Verify resources
+kubectl get pods -l application=spilo -o yaml | grep -A 10 resources
+
+
+2.7 VERIFY DATABASE CONNECTIVITY
+---------------------------------
+Location: Cluster
+
+# Connect to postgres
+kubectl exec -it acid-minimal-cluster-0 -- psql -U postgres -d postgres
+
+# Inside psql:
+# \l              -- List databases
+# \du             -- List users
+# \c foo          -- Connect to foo database
+# \dt             -- List tables
+# \q              -- Quit
+
+
+================================================================================
+PART 3: FAILOVER DEMONSTRATION
+================================================================================
+
+3.1 PREPARE FAILOVER TEST
+--------------------------
+Location: Cluster
+
+# Check current cluster status
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Identify primary (Leader) and replicas
+kubectl get pods -l application=spilo -o wide
+
+
+3.2 CREATE TEST DATA
+---------------------
+Location: Cluster
+
+# Create test database and data
+kubectl exec -i acid-minimal-cluster-0 -- bash -lc "psql -U postgres <<'SQL'
+CREATE DATABASE failover_test;
+\c failover_test
+CREATE TABLE customers (id SERIAL PRIMARY KEY, name TEXT, created_at TIMESTAMP DEFAULT NOW());
+INSERT INTO customers (name) VALUES ('Alice'), ('Bob'), ('Charlie');
+SQL"
+
+# Verify data exists
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+
+3.3 SCENARIO 1: DELETE PRIMARY POD (PLANNED FAILOVER)
+------------------------------------------------------
+Location: Cluster
+
+# Note current primary
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Watch in one terminal
+kubectl get pods -l application=spilo -w
+
+# In another terminal, delete primary pod
+kubectl delete pod acid-minimal-cluster-0
+
+# Observe:
+# - Pod deletion
+# - New leader election
+# - Pod recreation
+# - Rejoin as replica
+
+# Check Patroni status after failover
+kubectl exec -it acid-minimal-cluster-1 -- patronictl list
+
+# Verify data is intact
+kubectl exec -i acid-minimal-cluster-1 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+
+3.4 SCENARIO 2: MANUAL FAILOVER WITH PATRONICTL
+------------------------------------------------
+Location: Cluster
+
+# Check current leader
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Perform manual switchover
+kubectl exec -it acid-minimal-cluster-0 -- patronictl switchover --master acid-minimal-cluster-0 --candidate acid-minimal-cluster-1 --force
+
+# Verify new leader
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Verify data integrity
+kubectl exec -i acid-minimal-cluster-1 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+
+3.5 SCENARIO 3: SIMULATE NODE FAILURE
+--------------------------------------
+Location: Cluster
+
+# Identify which node the primary is on
+kubectl get pods -l application=spilo -o wide
+
+# Cordon the node (simulate node failure)
+kubectl cordon <node-name>
+
+# Delete the primary pod
+kubectl delete pod <primary-pod-name>
+
+# Watch failover and pod rescheduling
+kubectl get pods -l application=spilo -w -o wide
+
+# Uncordon the node
+kubectl uncordon <node-name>
+
+
+3.6 VERIFY DATA CONSISTENCY AFTER FAILOVER
+-------------------------------------------
+Location: Cluster
+
+# Add more data on new primary
+kubectl exec -i acid-minimal-cluster-1 -- psql -U postgres -d failover_test -c "INSERT INTO customers (name) VALUES ('Diana'), ('Eve'), ('Frank');"
+
+# Verify on current primary
+kubectl exec -i acid-minimal-cluster-1 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+# Wait for replication to complete (few seconds)
+sleep 5
+
+# Verify on replica
+kubectl exec -i acid-minimal-cluster-2 -- psql -U postgres -d failover_test -c "TABLE customers;"
+
+# Check replication lag
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+
+================================================================================
+PART 4: USER AUTOMATION & MANAGEMENT
+================================================================================
+
+4.1 SHOW CURRENT USER CONFIGURATION
+------------------------------------
+Location: Local Machine
+
+# Show current users.yaml
+cat /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/users.yaml
+
+# Show the PostgreSQL user CRD
+cat /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/postgresql-user-crd.yaml
+
+
+Location: Cluster
+
+# Check existing PostgreSQL users CRs
+kubectl get postgresqlusers
+
+# Get detailed info
+kubectl get postgresqlusers -o yaml
+
+
+4.2 VERIFY CURRENT DATABASE USERS
+----------------------------------
+Location: Cluster
+
+# Connect to database
+kubectl exec -it acid-minimal-cluster-0 -- psql -U postgres -d postgres
+
+# Inside psql:
+# \du                    -- List all users
+# SELECT * FROM pg_roles; -- Show all roles
+# \q
+
+
+# Alternative: Check from command line
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "\du"
+
+
+4.3 CHECK USER CONTROLLER STATUS
+---------------------------------
+Location: Cluster
+
+# Check controller pod
+kubectl get pods -n postgres | grep user-controller
+
+# Check controller logs
+kubectl logs -f deployment/user-controller -n postgres --tail=50
+
+# The logs should show:
+# - User reconciliation
+# - User creation/updates
+# - Error handling
+
+
+4.4 ADD NEW USER VIA GITOPS
+----------------------------
+Location: Local Machine
+
+# Edit users.yaml to add a new user
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/users.yaml
+
+# Add a new user (example):
+# ---
+# apiVersion: acid.zalan.do/v1
+# kind: PostgreSQLUser
+# metadata:
+#   name: john-doe
+#   namespace: default
+# spec:
+#   cluster: acid-minimal-cluster
+#   database: foo
+#   username: john_doe
+#   privileges:
+#     - SELECT
+#     - INSERT
+#     - UPDATE
+#   schemas:
+#     - public
+#   passwordSecretRef:
+#     name: john-doe-password
+#     key: password
+
+# Commit and push
+cd /home/ncl-admin/Desktop/conf-paper
+git add zilando-CRDs/UserManifests/users.yaml
+git commit -m "Add new user: john_doe"
+git push
+
+Location: Cluster
+
+# Watch ArgoCD sync
+kubectl get applications -n argocd user-controller -w
+
+# Watch controller logs
+kubectl logs -f deployment/user-controller -n postgres
+
+# Verify user was created
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "\du john_doe"
+
+# Check user CR
+kubectl get postgresqlusers john-doe -o yaml
+
+
+4.5 UPDATE USER PRIVILEGES
+---------------------------
+Location: Local Machine
+
+# Edit users.yaml to modify privileges
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/users.yaml
+
+# Change john_doe privileges to add DELETE:
+#   privileges:
+#     - SELECT
+#     - INSERT
+#     - UPDATE
+#     - DELETE
+
+# Commit and push
+git add zilando-CRDs/UserManifests/users.yaml
+git commit -m "Update john_doe privileges - add DELETE"
+git push
+
+Location: Cluster
+
+# Watch controller apply changes
+kubectl logs -f deployment/user-controller -n postgres
+
+# Verify privileges in database
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d foo -c "
+SELECT grantee, privilege_type 
+FROM information_schema.role_table_grants 
+WHERE grantee = 'john_doe';"
+
+
+4.6 VERIFY USER PERMISSIONS
+----------------------------
+Location: Cluster
+
+# Check role memberships
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "
+SELECT roleid::regrole AS role, member::regrole AS member
+FROM pg_auth_members;"
+
+# Check specific user privileges
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d foo -c "
+SELECT * FROM information_schema.role_table_grants WHERE grantee = 'john_doe';"
+
+# Test user can connect
+kubectl exec -i acid-minimal-cluster-0 -- psql -U john_doe -d foo -c "SELECT current_user, current_database();"
+
+
+4.7 DELETE USER VIA GITOPS
+---------------------------
+Location: Local Machine
+
+# Remove user from users.yaml
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/users.yaml
+
+# Delete the john-doe user section
+
+# Commit and push
+git add zilando-CRDs/UserManifests/users.yaml
+git commit -m "Remove user: john_doe"
+git push
+
+Location: Cluster
+
+# Watch controller remove user
+kubectl logs -f deployment/user-controller -n postgres
+
+# Verify user is gone
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "\du john_doe"
+
+# Should show: role "john_doe" does not exist
+
+
+4.8 SEALED SECRETS FOR USER PASSWORDS
+--------------------------------------
+Location: Local Machine
+
+# Show sealed secrets setup
+cat /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/UserManifests/sealed-users.yaml
+
+# Show the seal_users.py script
+cat /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/seal_users.py
+
+# Create new user with sealed secret
+# First create regular secret
+cat > /tmp/new-user-secret.yaml <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: new-user-password
+  namespace: default
+type: Opaque
+stringData:
+  password: "SecurePassword123!"
+EOF
+
+# Seal the secret
+kubeseal --format yaml --cert /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/pub-cert.pem \
+  < /tmp/new-user-secret.yaml > /tmp/sealed-new-user-secret.yaml
+
+# View sealed secret
+cat /tmp/sealed-new-user-secret.yaml
+
+
+================================================================================
+PART 5: MONITORING & VERIFICATION
+================================================================================
+
+5.1 CHECK CLUSTER HEALTH
+-------------------------
+Location: Cluster
+
+# Overall cluster status
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# Check replication status
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "
+SELECT client_addr, state, sync_state, replay_lag 
+FROM pg_stat_replication;"
+
+# Check database sizes
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d postgres -c "
+SELECT datname, pg_size_pretty(pg_database_size(datname)) 
+FROM pg_database 
+ORDER BY pg_database_size(datname) DESC;"
+
+
+5.2 CHECK OPERATOR LOGS
+------------------------
+Location: Cluster
+
+# Postgres operator logs
+kubectl logs -n postgres-operator deployment/postgres-operator --tail=100
+
+# User controller logs
+kubectl logs -n postgres deployment/user-controller --tail=100
+
+# Check for errors
+kubectl logs -n postgres-operator deployment/postgres-operator --tail=100 | grep -i error
+kubectl logs -n postgres deployment/user-controller --tail=100 | grep -i error
+
+
+5.3 CHECK ARGOCD SYNC STATUS
+-----------------------------
+Location: Cluster
+
+# Check all applications
+kubectl get applications -n argocd
+
+# Check specific app status
+kubectl describe application postgres-cluster -n argocd
+kubectl describe application user-controller -n argocd
+
+# Check sync history
+kubectl get application postgres-cluster -n argocd -o jsonpath='{.status.history}'
+
+
+5.4 CHECK RESOURCE USAGE
+-------------------------
+Location: Cluster
+
+# Check pod resource usage
+kubectl top pods -l application=spilo
+
+# Check node resource usage
+kubectl top nodes
+
+# Check PVC usage
+kubectl get pvc | grep acid-minimal-cluster
+kubectl describe pvc <pvc-name>
+
+
+5.5 BACKUP & RESTORE STATUS
+----------------------------
+Location: Cluster
+
+# Check if logical backups are configured
+kubectl get postgresql acid-minimal-cluster -o jsonpath='{.spec.enableLogicalBackup}'
+
+# Check backup pods (if configured)
+kubectl get pods | grep backup
+
+# Check backup logs (if configured)
+kubectl logs -l application=logical-backup
+
+
+================================================================================
+PART 6: TROUBLESHOOTING DEMONSTRATIONS
+================================================================================
+
+6.1 SIMULATE AND RESOLVE ISSUES
+--------------------------------
+Location: Cluster
+
+# Scenario: Controller is not working
+# Check controller pod status
+kubectl get pods -n postgres
+
+# If not running, check events
+kubectl describe pod -n postgres -l app=user-controller
+
+# Check logs for errors
+kubectl logs -n postgres deployment/user-controller --tail=50
+
+Location: Local Machine
+
+# Rebuild and redeploy controller (if needed)
+cd /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/controller
+
+# Build new image
+docker build -t 43911/user-controller:latest .
+
+# Push to registry
+docker push 43911/user-controller:latest
+
+Location: Cluster
+
+# Restart controller to pull new image
+kubectl rollout restart deployment user-controller -n postgres
+
+# Watch rollout
+kubectl rollout status deployment user-controller -n postgres
+
+# Verify new pod is running
+kubectl get pods -n postgres
+
+
+6.2 CHECK SYNC ISSUES
+----------------------
+Location: Cluster
+
+# If ArgoCD is out of sync
+kubectl get application postgres-cluster -n argocd -o jsonpath='{.status.sync.status}'
+
+# Force sync
+kubectl patch application postgres-cluster -n argocd \
+  --type merge -p '{"operation":{"initiatedBy":{"username":"admin"},"sync":{"revision":"HEAD"}}}'
+
+# Or use ArgoCD CLI (if installed)
+argocd app sync postgres-cluster
+
+
+================================================================================
+PART 7: CLEANUP (OPTIONAL)
+================================================================================
+
+7.1 SCALE DOWN CLUSTER
+-----------------------
+Location: Local Machine
+
+# Edit postgres-cluster.yaml
+nano /home/ncl-admin/Desktop/conf-paper/zilando-CRDs/postgres-config/postgres-cluster.yaml
+
+# Change numberOfInstances back to 3
+git add zilando-CRDs/postgres-config/postgres-cluster.yaml
+git commit -m "Scale cluster back to 3 instances"
+git push
+
+
+7.2 REMOVE TEST DATA
+---------------------
+Location: Cluster
+
+# Drop test database
+kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -c "DROP DATABASE failover_test;"
+
+
+================================================================================
+SUMMARY OF KEY COMMANDS
+================================================================================
+
+# Connect to cluster
+ssh root@27.100.250.27 -p 6787
+
+# Check everything
+kubectl get all --all-namespaces
+kubectl get applications -n argocd
+kubectl get postgresql
+kubectl get postgresqlusers
+kubectl get pods -l application=spilo
+kubectl exec -it acid-minimal-cluster-0 -- patronictl list
+
+# GitOps workflow
+git add <files>
+git commit -m "message"
+git push
+
+# Monitor
+kubectl logs -f deployment/user-controller -n postgres
+kubectl logs -n postgres-operator deployment/postgres-operator --tail=50
+kubectl get pods -w
+
+# Database access
+kubectl exec -it acid-minimal-cluster-0 -- psql -U postgres -d postgres
+
+================================================================================
+END OF DEMO
+================================================================================
