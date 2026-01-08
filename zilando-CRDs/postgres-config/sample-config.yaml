@@ -1,7 +1,526 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: sample-config
+  name: postgres-operator-config
   namespace: default
 data:
-  key: value
+  # ==================== GENERAL CONFIGURATION ====================
+  # Categories for CRD resources
+  # crd_categories: "all"
+  
+  # Spilo container image to use for PostgreSQL pods
+  docker_image: "ghcr.io/zalando/spilo-17:4.0-p2"
+  
+  # Enable/disable CRD registration
+  enable_crd_registration: "true"
+  
+  # Enable/disable CRD validation (deprecated)
+  enable_crd_validation: "true"
+  
+  # Enable lazy Spilo upgrades
+  enable_lazy_spilo_upgrade: "false"
+  
+  # Enable PostgreSQL version environment variable
+  enable_pgversion_env_var: "true"
+  
+  # Enable shared memory volume
+  enable_shm_volume: "true"
+  
+  # Enable Spilo WAL path compatibility
+  enable_spilo_wal_path_compat: "false"
+  
+  # Prefix cluster name with team ID
+  enable_team_id_clustername_prefix: "false"
+  
+  # Etcd host for patroni (leave empty if not using etcd)
+  etcd_host: ""
+  
+  # Annotation key to ignore instance limits
+  # ignore_instance_limits_annotation_key: ""
+  
+  # Use ConfigMaps instead of endpoints for leader election
+  kubernetes_use_configmaps: "false"
+  
+  # Maximum number of instances (-1 = disabled)
+  max_instances: "-1"
+  
+  # Minimum number of instances (-1 = disabled)
+  min_instances: "-1"
+  
+  # Resync period for operator
+  resync_period: "30m"
+  
+  # Repair period for operator
+  repair_period: "5m"
+  
+  # Set memory request equal to limit
+  set_memory_request_to_limit: "false"
+  
+  # Custom sidecar container images (format: name:image)
+  # sidecar_docker_images: "sidecar-name:image:tag"
+  
+  # Number of worker threads
+  workers: "8"
+  
+  # ==================== USERS CONFIGURATION ====================
+  # Additional roles for database owners
+  # additional_owner_roles: "cron_admin"
+  
+  # Enable automatic password rotation
+  enable_password_rotation: "false"
+  
+  # Days between password rotations
+  password_rotation_interval: "90"
+  
+  # Days to retain old passwords
+  password_rotation_user_retention: "180"
+  
+  # Username for replication
+  replication_username: "standby"
+  
+  # Superuser username
+  super_username: "postgres"
+  
+  # ==================== MAJOR VERSION UPGRADE ====================
+  # Upgrade mode: "manual" or "full"
+  major_version_upgrade_mode: "manual"
+  
+  # Teams allowed to upgrade (comma-separated)
+  # major_version_upgrade_team_allow_list: "team1,team2"
+  
+  # Minimum PostgreSQL version
+  minimal_major_version: "13"
+  
+  # Target PostgreSQL version
+  target_major_version: "17"
+  
+  # ==================== KUBERNETES CONFIGURATION ====================
+  # Additional Linux capabilities for pods (comma-separated)
+  # additional_pod_capabilities: "SYS_NICE,SYS_RESOURCE"
+  
+  # Additional secret to mount in pods
+  # additional_secret_mount: "some-secret-name"
+  
+  # Mount path for additional secret
+  # additional_secret_mount_path: "/some/dir"
+  
+  # Kubernetes cluster domain
+  cluster_domain: "cluster.local"
+  
+  # Labels for cluster resources (format: key:value)
+  cluster_labels: "application:spilo"
+  
+  # Label key for cluster name
+  cluster_name_label: "cluster-name"
+  
+  # Custom annotations for pods (format: key:value,key:value)
+  # custom_pod_annotations: "keya:valuea,keyb:valueb"
+  
+  # Annotation key for deletion date
+  # delete_annotation_date_key: "delete-date"
+  
+  # Annotation key for cluster name deletion
+  # delete_annotation_name_key: "delete-clustername"
+  
+  # Annotations for downscaler integration (comma-separated)
+  # downscaler_annotations: "deployment-time,downscaler/*"
+  
+  # Allow secrets from other namespaces
+  enable_cross_namespace_secret: "false"
+  
+  # Enable finalizers on resources
+  enable_finalizers: "false"
+  
+  # Enable init containers
+  enable_init_containers: "true"
+  
+  # Set owner references on resources
+  enable_owner_references: "false"
+  
+  # Delete PVCs when cluster is deleted
+  enable_persistent_volume_claim_deletion: "true"
+  
+  # Enable pod anti-affinity
+  enable_pod_antiaffinity: "false"
+  
+  # Enable pod disruption budgets
+  enable_pod_disruption_budget: "true"
+  
+  # Enable readiness probes
+  enable_readiness_probe: "false"
+  
+  # Delete secrets when cluster is deleted
+  enable_secrets_deletion: "true"
+  
+  # Enable sidecar containers
+  enable_sidecars: "true"
+  
+  # Annotations to ignore (comma-separated)
+  # ignored_annotations: "annotation1,annotation2"
+  
+  # Secret name for infrastructure roles
+  # infrastructure_roles_secret_name: "postgresql-infrastructure-roles"
+  
+  # Infrastructure role secrets configuration
+  # infrastructure_roles_secrets: "secretname:monitoring-roles,userkey:user,passwordkey:password,rolekey:inrole"
+  
+  # Annotations inherited from cluster to pods (comma-separated)
+  # inherited_annotations: "owned-by"
+  
+  # Labels inherited from cluster to pods (comma-separated)
+  # inherited_labels: "application,environment"
+  
+  # Timeout for moving master pod
+  master_pod_move_timeout: "20m"
+  
+  # Node labels for pod scheduling (format: key:value)
+  # node_readiness_label: "status:ready"
+  
+  # Merge mode for node labels: "AND" or "OR"
+  # node_readiness_label_merge: "OR"
+  
+  # Secret name for OAuth tokens
+  oauth_token_secret_name: "postgresql-operator"
+  
+  # Use master label in PDB selector
+  pdb_master_label_selector: "true"
+  
+  # Format for PDB names
+  pdb_name_format: "postgres-{cluster}-pdb"
+  
+  # PVC retention policy (when_deleted:retain/delete,when_scaled:retain/delete)
+  persistent_volume_claim_retention_policy: "when_deleted:retain,when_scaled:retain"
+  
+  # Prefer anti-affinity vs require
+  pod_antiaffinity_preferred_during_scheduling: "false"
+  
+  # Topology key for anti-affinity
+  pod_antiaffinity_topology_key: "kubernetes.io/hostname"
+  
+  # ConfigMap for pod environment variables
+  # pod_environment_configmap: "default/my-custom-config"
+  
+  # Secret for pod environment variables
+  # pod_environment_secret: "my-custom-secret"
+  
+  # Pod management policy: "ordered_ready" or "parallel"
+  pod_management_policy: "ordered_ready"
+  
+  # Priority class for pods
+  # pod_priority_class_name: "postgres-pod-priority"
+  
+  # Label key for pod role
+  pod_role_label: "spilo-role"
+  
+  # Service account definition for pods
+  pod_service_account_definition: ""
+  
+  # Service account name for pods
+  pod_service_account_name: "postgres-pod"
+  
+  # Role binding definition for service account
+  pod_service_account_role_binding_definition: ""
+  
+  # Grace period for pod termination
+  pod_terminate_grace_period: "5m"
+  
+  # Template for secret names
+  secret_name_template: "{username}.{cluster}.credentials.{tprkind}.{tprgroup}"
+  
+  # Share PostgreSQL socket with sidecars
+  share_pgsocket_with_sidecars: "false"
+  
+  # Allow privilege escalation in Spilo containers
+  spilo_allow_privilege_escalation: "true"
+  
+  # User ID to run Spilo
+  # spilo_runasuser: "101"
+  
+  # Group ID to run Spilo
+  # spilo_runasgroup: "103"
+  
+  # Filesystem group ID
+  # spilo_fsgroup: "103"
+  
+  # Run Spilo in privileged mode
+  spilo_privileged: "false"
+  
+  # Storage resize mode: "ebs", "mixed", "pvc", "off"
+  storage_resize_mode: "pvc"
+  
+  # Tolerations for pod scheduling (format: key:value,operator:Exists,effect:NoSchedule)
+  # toleration: "key:db-only,operator:Exists,effect:NoSchedule"
+  
+  # Namespace(s) to watch (* = all namespaces)
+  watched_namespace: "*"
+  
+  # ==================== POSTGRES POD RESOURCES ====================
+  # Default CPU limit
+  default_cpu_limit: "1"
+  
+  # Default CPU request
+  default_cpu_request: "100m"
+  
+  # Default memory limit
+  default_memory_limit: "500Mi"
+  
+  # Default memory request
+  default_memory_request: "100Mi"
+  
+  # Maximum CPU request
+  # max_cpu_request: "1"
+  
+  # Maximum memory request
+  # max_memory_request: "4Gi"
+  
+  # Minimum CPU limit
+  min_cpu_limit: "250m"
+  
+  # Minimum memory limit
+  min_memory_limit: "250Mi"
+  
+  # ==================== TIMEOUTS CONFIGURATION ====================
+  # Patroni API check interval
+  patroni_api_check_interval: "1s"
+  
+  # Patroni API check timeout
+  patroni_api_check_timeout: "5s"
+  
+  # Pod label wait timeout
+  pod_label_wait_timeout: "10m"
+  
+  # Pod deletion wait timeout
+  pod_deletion_wait_timeout: "10m"
+  
+  # Ready wait interval
+  ready_wait_interval: "3s"
+  
+  # Ready wait timeout
+  ready_wait_timeout: "30s"
+  
+  # Resource check interval
+  resource_check_interval: "3s"
+  
+  # Resource check timeout
+  resource_check_timeout: "10m"
+  
+  # ==================== LOAD BALANCER CONFIGURATION ====================
+  # Custom annotations for services (format: key:value,key:value)
+  # custom_service_annotations: "keyx:valuez,keya:valuea"
+  
+  # Hosted zone for DNS
+  db_hosted_zone: "db.example.com"
+  
+  # Enable load balancer for master
+  enable_master_load_balancer: "false"
+  
+  # Enable load balancer for master pooler
+  enable_master_pooler_load_balancer: "false"
+  
+  # Enable load balancer for replicas
+  enable_replica_load_balancer: "false"
+  
+  # Enable load balancer for replica pooler
+  enable_replica_pooler_load_balancer: "false"
+  
+  # Traffic policy: "Cluster" or "Local"
+  external_traffic_policy: "Cluster"
+  
+  # DNS format for master
+  master_dns_name_format: "{cluster}.{namespace}.{hostedzone}"
+  
+  # Legacy DNS format for master
+  master_legacy_dns_name_format: "{cluster}.{team}.{hostedzone}"
+  
+  # DNS format for replicas
+  replica_dns_name_format: "{cluster}-repl.{namespace}.{hostedzone}"
+  
+  # Legacy DNS format for replicas
+  replica_legacy_dns_name_format: "{cluster}-repl.{team}.{hostedzone}"
+  
+  # ==================== AWS/GCP CONFIGURATION ====================
+  # AWS region
+  aws_region: "eu-central-1"
+  
+  # Enable EBS GP3 migration
+  enable_ebs_gp3_migration: "false"
+  
+  # Max size for GP3 migration (in GB)
+  enable_ebs_gp3_migration_max_size: "1000"
+  
+  # GCP credentials
+  # gcp_credentials: ""
+  
+  # IAM role for Kubernetes
+  # kube_iam_role: ""
+  
+  # S3 bucket for logs
+  # log_s3_bucket: ""
+  
+  # Azure storage account for WAL
+  # wal_az_storage_account: ""
+  
+  # Google Storage bucket for WAL
+  # wal_gs_bucket: ""
+  
+  # S3 bucket for WAL
+  # wal_s3_bucket: ""
+  
+  # ==================== LOGICAL BACKUP CONFIGURATION ====================
+  # Azure storage account for backups
+  # logical_backup_azure_storage_account_name: ""
+  
+  # Azure storage container for backups
+  # logical_backup_azure_storage_container: ""
+  
+  # Azure storage account key
+  # logical_backup_azure_storage_account_key: ""
+  
+  # CPU limit for backup jobs
+  # logical_backup_cpu_limit: "1"
+  
+  # CPU request for backup jobs
+  # logical_backup_cpu_request: "100m"
+  
+  # Docker image for backups
+  logical_backup_docker_image: "ghcr.io/zalando/postgres-operator/logical-backup:v1.14.0"
+  
+  # GCP credentials for backups
+  # logical_backup_google_application_credentials: ""
+  
+  # Prefix for backup job names
+  logical_backup_job_prefix: "logical-backup-"
+  
+  # Memory limit for backup jobs
+  # logical_backup_memory_limit: "1Gi"
+  
+  # Memory request for backup jobs
+  # logical_backup_memory_request: "100Mi"
+  
+  # Backup provider: "s3", "gcs", "az"
+  logical_backup_provider: "s3"
+  
+  # S3 access key ID
+  logical_backup_s3_access_key_id: ""
+  
+  # S3 bucket for backups
+  logical_backup_s3_bucket: "my-bucket-url"
+  
+  # S3 bucket prefix
+  logical_backup_s3_bucket_prefix: "spilo"
+  
+  # S3 endpoint URL
+  logical_backup_s3_endpoint: ""
+  
+  # S3 region
+  logical_backup_s3_region: ""
+  
+  # S3 secret access key
+  logical_backup_s3_secret_access_key: ""
+  
+  # S3 server-side encryption
+  logical_backup_s3_sse: "AES256"
+  
+  # Backup retention time
+  logical_backup_s3_retention_time: ""
+  
+  # Cron schedule for backups (minute hour day month weekday)
+  logical_backup_schedule: "30 00 * * *"
+  
+  # Secret for backup environment variables
+  logical_backup_cronjob_environment_secret: ""
+  
+  # ==================== DEBUG CONFIGURATION ====================
+  # Enable debug logging
+  debug_logging: "true"
+  
+  # Enable database access
+  enable_database_access: "true"
+  
+  # ==================== TEAMS API CONFIGURATION ====================
+  # Enable admin role for users
+  enable_admin_role_for_users: "true"
+  
+  # Enable PostgresTeam CRD
+  enable_postgres_team_crd: "false"
+  
+  # Enable superusers from Team CRD
+  enable_postgres_team_crd_superusers: "false"
+  
+  # Enable team member deprecation
+  enable_team_member_deprecation: "false"
+  
+  # Enable team superuser
+  enable_team_superuser: "false"
+  
+  # Enable Teams API integration
+  enable_teams_api: "false"
+  
+  # PAM configuration string
+  pam_configuration: "https://info.example.com/oauth2/tokeninfo?access_token= uid realm=/employees"
+  
+  # PAM role name
+  pam_role_name: "zalandos"
+  
+  # Teams with superuser privileges (comma-separated)
+  postgres_superuser_teams: "postgres_superusers"
+  
+  # Roles that cannot be deleted (comma-separated)
+  protected_role_names: "admin,cron_admin"
+  
+  # Suffix for deleted roles
+  role_deletion_suffix: "_deleted"
+  
+  # Admin role name
+  team_admin_role: "admin"
+  
+  # Role configuration from Teams API (format: key:value)
+  team_api_role_configuration: "log_statement:all"
+  
+  # URL for Teams API
+  teams_api_url: "http://fake-teams-api.default.svc.cluster.local"
+  
+  # ==================== LOGGING/REST API ====================
+  # Port for REST API
+  api_port: "8080"
+  
+  # Number of cluster history entries
+  cluster_history_entries: "1000"
+  
+  # Number of ring log lines
+  ring_log_lines: "100"
+  
+  # ==================== CONNECTION POOLER ====================
+  # Schema for pooler user
+  connection_pooler_schema: "pooler"
+  
+  # Pooler username
+  connection_pooler_user: "pooler"
+  
+  # Docker image for pgBouncer
+  connection_pooler_image: "registry.opensource.zalan.do/acid/pgbouncer:master-32"
+  
+  # Max database connections
+  connection_pooler_max_db_connections: "60"
+  
+  # Pooling mode: "session" or "transaction"
+  connection_pooler_mode: "transaction"
+  
+  # Number of pooler instances
+  connection_pooler_number_of_instances: "2"
+  
+  # CPU limit for pooler
+  connection_pooler_default_cpu_limit: "1"
+  
+  # CPU request for pooler
+  connection_pooler_default_cpu_request: "500m"
+  
+  # Memory limit for pooler
+  connection_pooler_default_memory_limit: "100Mi"
+  
+  # Memory request for pooler
+  connection_pooler_default_memory_request: "100Mi"
+  
+  # ==================== PATRONI CONFIGURATION ====================
+  # Enable Patroni failsafe mode
+  enable_patroni_failsafe_mode: "false"
