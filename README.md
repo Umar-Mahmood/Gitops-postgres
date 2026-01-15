@@ -49,26 +49,29 @@ This system provides a production-ready PostgreSQL deployment on Kubernetes with
 ### Components
 
 1. **Postgres Operator** (namespace: `postgres-operator`)
+
    - Watches for PostgreSQL CRD changes
    - Manages cluster lifecycle (create, update, scale, delete)
    - Handles rolling updates and version upgrades
 
 2. **PostgreSQL Cluster** (namespace: `default`)
+
    - Highly available PostgreSQL instances with Patroni
    - Configured via `postgresql` CRD
    - Default cluster name: `acid-minimal-cluster`
 
 3. **User Controller** (namespace: `postgres`)
+
    - Custom Python-based controller
    - Watches ConfigMap and Secrets for user definitions
    - Synchronizes database users and roles
    - Features drift detection and reconciliation
 
 4. **ArgoCD** (namespace: `argocd`)
+
    - Monitors Git repository for changes
    - Automatically syncs configurations to cluster
-   - Manages three applications:
-     - `postgres-operator`: Operator deployment
+   - Manages two applications:
      - `postgres-cluster`: Database cluster configuration
      - `postgres-users`: User management
 
@@ -120,6 +123,7 @@ This verifies that Python 3 and `kubeseal` are installed. If any are missing, in
 This installs the pre-commit hook that automatically seals user secrets before committing, ensuring passwords are never stored in plaintext in Git.
 
 **What the hook does:**
+
 - Detects changes to `zilando-CRDs/UserManifests/edit-users.yaml`
 - Runs `seal_users.py` to generate encrypted secrets
 - Generates `users.yaml` (ConfigMap without passwords)
@@ -190,13 +194,10 @@ All infrastructure and configuration is defined as code in Git. Changes are made
 
 ### Managed Resources
 
-ArgoCD manages three applications:
-
-1. **postgres-operator**: Deploys and manages the Postgres Operator
-   - Path: `postgres-operator/manifests/`
-   - Namespace: `postgres-operator` or `default`
+ArgoCD manages two applications:
 
 2. **postgres-cluster**: Manages PostgreSQL cluster configuration
+
    - Path: `zilando-CRDs/postgres-config/`
    - Namespace: `default`
 
@@ -215,6 +216,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```
 
 Access at: `https://localhost:8080`
+
 - Username: `admin`
 - Password: (from command above)
 
@@ -255,11 +257,13 @@ metadata:
 ### Adding a New User
 
 1. **Edit the user file:**
+
    ```bash
    nano zilando-CRDs/UserManifests/edit-users.yaml
    ```
 
 2. **Add user definition:**
+
    ```yaml
    - username: new_user
      database: postgres
@@ -269,6 +273,7 @@ metadata:
    ```
 
 3. **Commit and push:**
+
    ```bash
    git add zilando-CRDs/UserManifests/edit-users.yaml
    git commit -m "Add new user: new_user"
@@ -276,16 +281,18 @@ metadata:
    ```
 
 4. **The pre-commit hook automatically:**
+
    - Generates `users.yaml` (ConfigMap without passwords)
    - Generates `sealed-users.yaml` (encrypted secrets)
    - Stages both files for commit
    - Unstages `edit-users.yaml` (keeps it local only)
 
 5. **Verify user creation:**
+
    ```bash
    # Watch controller logs
    kubectl logs -f deployment/user-controller -n postgres
-   
+
    # Check database
    kubectl exec -it acid-minimal-cluster-0 -- psql -U postgres -c "\du"
    ```
@@ -330,8 +337,8 @@ spec:
   numberOfInstances: 4
   users:
     zalando:
-    - superuser
-    - createdb
+      - superuser
+      - createdb
     foo_user: []
   databases:
     foo: zalando
@@ -348,7 +355,7 @@ spec:
 Change `numberOfInstances`:
 
 ```yaml
-numberOfInstances: 3  # Scale to 3 instances
+numberOfInstances: 3 # Scale to 3 instances
 ```
 
 Commit and push. ArgoCD will sync and Postgres Operator will add/remove replicas.
@@ -370,7 +377,7 @@ spec:
 
 ```yaml
 postgresql:
-  version: "16"  # Downgrade/upgrade PostgreSQL version
+  version: "16" # Downgrade/upgrade PostgreSQL version
 ```
 
 **Note:** Version changes trigger rolling updates.
@@ -389,11 +396,13 @@ postgresql:
 ### Making Configuration Changes
 
 1. **Edit cluster configuration:**
+
    ```bash
    nano zilando-CRDs/postgres-config/postgres-cluster.yaml
    ```
 
 2. **Commit and push:**
+
    ```bash
    git add zilando-CRDs/postgres-config/postgres-cluster.yaml
    git commit -m "Scale cluster to 3 instances"
@@ -500,6 +509,7 @@ kubectl exec -it acid-minimal-cluster-0 -- patronictl list
 ```
 
 Expected output:
+
 ```
 + Cluster: acid-minimal-cluster -------+----+-----------+
 | Member                | Host        | Role    | State   | TL | Lag  |
@@ -618,6 +628,7 @@ kubectl exec -i acid-minimal-cluster-0 -- psql -U postgres -d failover_test -c "
 **Problem:** Passwords not being sealed automatically
 
 **Solution:**
+
 ```bash
 # Reinstall hook
 ./setup-hooks.sh
@@ -635,6 +646,7 @@ python3 seal_users.py
 **Problem:** Users defined but not appearing in database
 
 **Solution:**
+
 ```bash
 # Check controller logs
 kubectl logs deployment/user-controller -n postgres
@@ -652,6 +664,7 @@ kubectl rollout restart deployment/user-controller -n postgres
 ### PostgreSQL Pod Not Starting
 
 **Solution:**
+
 ```bash
 # Check pod status
 kubectl describe pod acid-minimal-cluster-0
@@ -669,6 +682,7 @@ kubectl get events --sort-by=.lastTimestamp
 ### ArgoCD Not Syncing
 
 **Solution:**
+
 ```bash
 # Check application status
 kubectl get application postgres-cluster -n argocd
@@ -684,6 +698,7 @@ kubectl patch application postgres-cluster -n argocd \
 ### Certificate Mismatch for Sealed Secrets
 
 **Solution:**
+
 ```bash
 # Fetch current certificate
 kubeseal --fetch-cert > zilando-CRDs/pub-cert.pem
@@ -755,6 +770,7 @@ kubectl rollout restart deployment/user-controller -n postgres
 ## Support
 
 For issues or questions:
+
 1. Check this README and the comprehensive [guide.md](guide.md)
 2. Review relevant logs
 3. Check the troubleshooting section
@@ -763,4 +779,4 @@ For issues or questions:
 ---
 
 **Repository:** Gitops-postgres  
-**Owner:** Umar-Mahmood  
+**Owner:** Umar-Mahmood
