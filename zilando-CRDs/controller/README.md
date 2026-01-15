@@ -18,7 +18,6 @@ A robust, intelligent Kubernetes controller for managing PostgreSQL users and ro
 - 🏊 **Connection Pooling**: Efficient database connection management
 - 💾 **State Persistence**: Tracks last applied configuration in `/tmp/users_state.json`
 - 🧪 **Dry-Run Mode**: Preview changes without applying them
-- 📈 **Prometheus Metrics**: Built-in metrics for monitoring and observability
 - 🔒 **Transaction Safety**: All multi-step operations wrapped in transactions
 - 🛡️ **SQL Injection Protection**: Uses parameterized queries with `psycopg2.sql`
 
@@ -207,24 +206,6 @@ The controller outputs structured JSON logs:
 }
 ```
 
-#### Metrics
-
-Access Prometheus metrics via the `Metrics` class:
-
-```python
-controller.metrics.export_prometheus()
-```
-
-Available metrics:
-
-- `postgres_controller_reconciliations_total` - Total reconciliation cycles
-- `postgres_controller_last_reconciliation_timestamp` - Last reconciliation timestamp
-- `postgres_controller_drift_total` - Total drift detections
-- `postgres_controller_users_managed` - Current managed users
-- `postgres_controller_roles_managed` - Current managed roles
-- `postgres_controller_errors_total` - Total errors
-- `postgres_controller_last_error_timestamp` - Last error timestamp
-
 #### Reconciliation Summary
 
 After each cycle, the controller prints a summary:
@@ -248,14 +229,14 @@ After each cycle, the controller prints a summary:
 ### Component Overview
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│           PostgresUserController                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  Kubernetes  │  │   Database   │  │    State     │ │
-│  │    Client    │  │    Client    │  │   Manager    │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘ │
-│         │                  │                  │         │
-│         ▼                  ▼                  ▼         │
+┌────────────────────────────────────────────────────────┐
+│           PostgresUserController                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  Kubernetes  │  │   Database   │  │    State     │  │
+│  │    Client    │  │    Client    │  │   Manager    │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+│         │                  │                  │        │
+│         ▼                  ▼                  ▼        │
 │  ┌──────────────────────────────────────────────────┐  │
 │  │         Reconciliation Loop                      │  │
 │  │  1. Fetch ConfigMap                              │  │
@@ -275,7 +256,6 @@ After each cycle, the controller prints a summary:
 - **`Config`**: Centralized configuration from environment variables
 - **`UserSpec`**: Data model for user specifications
 - **`ReconciliationStats`**: Tracks statistics for each reconciliation cycle
-- **`Metrics`**: Prometheus-compatible metrics collection
 - **`KubernetesClient`**: All Kubernetes API interactions
 - **`DatabaseClient`**: All PostgreSQL operations with connection pooling
 - **`StateManager`**: Persistent state management for drift detection
